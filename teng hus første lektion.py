@@ -11,18 +11,19 @@ pygame.draw.line(screen, (0, 255, 0), (0, 380), (600, 380))#jorden
 # Draw the bottom of the house
 
 # Draw two walls
-pygame.draw.line(screen, (0, 0, 0), (100, 380), (100, 30))
-pygame.draw.line(screen, (0, 0, 0), (540, 380), (540, 30))
+pygame.draw.line(screen, (0, 0, 0), (100, 380), (100, 150))
+pygame.draw.line(screen, (0, 0, 0), (540, 380), (540, 150))
+
 # Draw the roof
-pygame.draw.line(screen, (0, 0, 0), (320, 0), (100, 30))
-pygame.draw.line(screen, (0, 0, 0), (320, 0), (540, 30))
+pygame.draw.line(screen, (0, 0, 0), (320, 0), (100, 150))
+pygame.draw.line(screen, (0, 0, 0), (320, 0), (540, 150))
 #loft
-pygame.draw.line(screen, (0, 0, 0), (100, 30), (540, 30))
+pygame.draw.line(screen, (0, 0, 0), (100, 150), (540, 150))
 
 # dør
 pygame.draw.rect(screen, (255, 0, 0), (320, 300, 45, 80))
-#pool
-pygame.draw.rect(screen, (0, 0, 255), (540, 380, 330, 378))
+#have
+pygame.draw.rect(screen, (0, 255, 50), (0, 380, 800, 150))
 
 # Make sure the window stays open until the user closes it
 run_flag = True
