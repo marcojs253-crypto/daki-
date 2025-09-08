@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 df=pd.read_csv('iris.csv')
-df.fillna(0, inplace=True)
+df.dropna(inplace=True)
 #df_fillna = df.fillna(0)
 
 x = df.iloc[:, :2]
