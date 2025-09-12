@@ -25,7 +25,7 @@ pygame.draw.line(screen, (0, 0, 0), (100, 150), (540, 150))
 
 # dør
 pygame.draw.rect(screen, (255, 0, 0), (320, 300, 50, 80))
-pygame.draw.circle(screen, (0, 0, 100), (0, center_y), radius, width)
+
 
 #have
 pygame.draw.rect(screen, (0, 255, 50), (0, 380, 800, 150))
