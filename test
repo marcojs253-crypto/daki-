@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 df=pd.read_csv('iris.csv')
+df = df.sample(frac=1, random_state=42).reset_index(drop=True) 
 df.dropna(inplace=True)
 #df_fillna = df.fillna(0)
 
@@ -18,10 +19,11 @@ x = df.iloc[:, :2]
 y = df.target
 
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+x_train_small, y_train_small = x_train[:50], y_train[:50]
 
-k = 13
+k = 11
 knn_classifier = KNeighborsClassifier(n_neighbors=k)
-knn_classifier.fit(x_train, y_train)
+knn_classifier.fit(x_train_small, y_train_small)
 
 y_pred = knn_classifier.predict(x_test)
 
