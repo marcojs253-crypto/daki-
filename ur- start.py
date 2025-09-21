@@ -1,8 +1,10 @@
-import pygame, math  # HVAD: Hent værktøjer udefra
-                     # HVORFOR: Vi skal bruge vindue/grafik og cos/sin
+
+import datetime, pygame, math  # HVAD: Hent værktøjer udefra
+
 
 pygame.init()        # HVAD: Start pygame
-                     # HVORFOR: Skal gøres før pygame virker
+
+
 
 # HVAD: Lav et vindue
 skaerm = pygame.display.set_mode((640, 480))
@@ -24,11 +26,16 @@ ANTAL_T = 12
 ANTAL_M = 60
 VINKEL_grad = 360 // ANTAL_T  # 30 grader
 vinkel_grad_min =360 // ANTAL_M
-
+# 1) Tegn cirklerne
 pygame.draw.circle(skaerm, (0, 0, 255), (centrum_x, centrum_y), 210)
 pygame.draw.circle(skaerm, (0, 0, 0), (centrum_x, centrum_y), 5)
 
-# 3) Tegn stregerne
+#  Tegn viserne
+
+ 
+
+
+# 3) Tegn tids indikatorerne
 
 
 for i in range (ANTAL_T):
