@@ -9,37 +9,50 @@ skaerm = pygame.display.set_mode((640, 480))
 # HVORFOR: Vi skal have noget at tegne på
 
 # HVAD: Gør baggrunden hvid
-skaerm.fill((255, 255, 255))
+skaerm.fill((0, 0, 0))
 # HVORFOR: Så vi kan se vores sorte streger
 
 # HVORFOR: Det hjælper os med at se centrum
 # 2) Ur-geometri (som angivet)
 centrum_x, centrum_y = 320, 240
 radius = 190              # 240 - 50 i din opsætning
-streg_laengde = 30        # hvor langt ind fra ydercirklen
-streg_tykkelse = 5        # linjetykkelse i pixels
-ANTAL_TIMER = 12
-VINKEL_TRIN = 360 // ANTAL_TIMER  # 30 grader
+streg_laengde_T = 30        # hvor langt ind fra ydercirklen
+streg_tykkelse_T = 5        # linjetykkelse i pixels
+streg_laengde_M = 10        
+streg_tykkelse_M = 2 
+ANTAL_T = 12
+ANTAL_M = 60
+VINKEL_grad = 360 // ANTAL_T  # 30 grader
+vinkel_grad_min =360 // ANTAL_M
 
 pygame.draw.circle(skaerm, (0, 0, 255), (centrum_x, centrum_y), 210)
 pygame.draw.circle(skaerm, (0, 0, 0), (centrum_x, centrum_y), 5)
 
-def punkt_fra_top(centrum_x, centrum_y, radius, vinkel_fra_kl12_grader):
-    """
-    Beregn et punkt på cirklen givet vinkel målt fra 'kl. 12' (opad).
-    Bruges konventionen: x = r*sin(θ) og y = r*cos(θ), hvor θ er i radianer.
-    """
-    theta = math.radians(vinkel_fra_kl12_grader)  # grader -> radianer
-    x = centrum_x + radius * math.sin(theta)      # vandret (Opposite)
-    y = centrum_y + radius * math.cos(theta)      # lodret  (Adjacent)
-    return int(x), int(y)
+# 3) Tegn stregerne
 
-# 3) Tegn 12 time-streger i 30°-trin, fra ydercirklen og ind
-for i in range(ANTAL_TIMER):
-    vinkel_grader = i * VINKEL_TRIN            # 0,30,60,...,330
-    yderpunkt = punkt_fra_top(centrum_x, centrum_y, radius, vinkel_grader)
-    inderpunkt = punkt_fra_top(centrum_x, centrum_y, radius - streg_laengde, vinkel_grader)
-    pygame.draw.line(skaerm, (0, 0, 0), yderpunkt, inderpunkt, streg_tykkelse)  # tegn streg
+
+for i in range (ANTAL_T):
+    vinkel = i * VINKEL_grad
+    vinkel_rad = math.radians(vinkel)  # omregn til radianer
+    x_start = centrum_x + radius * math.sin(vinkel_rad)      # x-koordinat for startpunkt
+    y_start = centrum_y + radius * math.cos(vinkel_rad)      # y-koordinat for startpunkt
+    start_punkt = (x_start, y_start)
+    x_slut = centrum_x + (radius-streg_laengde_T) * math.sin(vinkel_rad) # y-koordinat for startpunkt
+    y_slut = centrum_y + (radius-streg_laengde_T) * math.cos(vinkel_rad) # y-koordinat for startpunkt
+    slut_punkt = (x_slut, y_slut)
+    pygame.draw.line(skaerm, (0, 0, 0), start_punkt, slut_punkt, streg_tykkelse_T)
+
+for i in range (ANTAL_M):
+    vinkel = i * vinkel_grad_min
+    vinkel_rad = math.radians(vinkel)  # omregn til radianer
+    x_start = centrum_x + radius * math.sin(vinkel_rad)      # x-koordinat for startpunkt
+    y_start = centrum_y + radius * math.cos(vinkel_rad)      # y-koordinat for startpunkt
+    start_punkt = (x_start, y_start)
+    x_slut = centrum_x + (radius-streg_laengde_T) * math.sin(vinkel_rad) # y-koordinat for startpunkt
+    y_slut = centrum_y + (radius-streg_laengde_T) * math.cos(vinkel_rad) # y-koordinat for startpunkt
+    slut_punkt = (x_slut, y_slut)
+    pygame.draw.line(skaerm, (0, 0, 0), start_punkt, slut_punkt, streg_tykkelse_M)    
+
 
 pygame.display.flip()
 
