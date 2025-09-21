@@ -1,4 +1,6 @@
-import datetime, pygame, math  # HVAD: Hent værktøjer udefra
+import pygame
+import math  # HVAD: Hent værktøjer udefra
+from datetime import datetime
 
 
 pygame.init()        # HVAD: Start pygame
@@ -21,6 +23,7 @@ streg_laengde_T = 30        # hvor langt ind fra ydercirklen
 streg_tykkelse_T = 5        # linjetykkelse i pixels
 streg_laengde_M = 10        
 streg_tykkelse_M = 2 
+streg_tykkelse_Viser_sekundt = 1
 ANTAL_T = 12
 ANTAL_M = 60
 VINKEL_grad = 360 // ANTAL_T  # 30 grader
@@ -31,8 +34,21 @@ pygame.draw.circle(skaerm, (0, 0, 0), (centrum_x, centrum_y), 5)
 
 #  Tegn viserne
 
- 
 
+
+# # Hent det aktuelle klokkeslæt
+# for i in range(6000):
+#     nu = datetime.datetime.now()
+#     sekunder = nu.second
+#     vinkel_grad_sekunder = math.radians(sekunder*6)       # 60 sekunder gange 6 = 360 grader
+#     x_min_slut = centrum_x + radius * math.sin(vinkel_grad_sekunder)      # x-koordinat for startpunkt
+#     y_min_slut = centrum_y + radius * math.cos(vinkel_grad_sekunder)      # y-koordinat for startpunkt
+#     pygame.draw.line(skaerm, (255, 255, 255), centrum_x, centrum_y, x_min_slut, y_min_slut, streg_tykkelse_Viser_sekundt)
+
+
+
+
+    
 
 # 3) Tegn tids indikatorerne
 
