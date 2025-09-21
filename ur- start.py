@@ -1,4 +1,3 @@
-
 import datetime, pygame, math  # HVAD: Hent værktøjer udefra
 
 
