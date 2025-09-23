@@ -1,9 +1,18 @@
 import pygame
 import math  # HVAD: Hent værktøjer udefra
 from datetime import datetime
+<<<<<<< HEAD
 import time
 
 pygame.init()        # HVAD: Start pygame
+=======
+
+
+pygame.init()        # HVAD: Start pygame
+
+
+
+>>>>>>> c8e70abdb374a54ed5437bb6b5b7833c62d05c63
 # HVAD: Lav et vindue
 skaerm = pygame.display.set_mode((640, 480))
 # HVORFOR: Vi skal have noget at tegne på
@@ -20,16 +29,73 @@ radius = 210              # 240 - 50 i din opsætning
 streg_laengde_T = 30        # hvor langt ind fra ydercirklen
 streg_tykkelse_T = 6        # linjetykkelse i pixels
 streg_laengde_M = 10        
+<<<<<<< HEAD
 streg_tykkelse_M = 1 
 streg_tykkelse_Viser_sekundt = 1
 streg_tykkelse_Viser_minute = 3
 streg_tykkelse_Viser_time = 6
+=======
+streg_tykkelse_M = 2 
+streg_tykkelse_Viser_sekundt = 1
+>>>>>>> c8e70abdb374a54ed5437bb6b5b7833c62d05c63
 ANTAL_T = 12
 ANTAL_M = 60
 VINKEL_grad = 360 // ANTAL_T  # 30 grader
 vinkel_grad_min =360 // ANTAL_M
+<<<<<<< HEAD
 
 
+=======
+# 1) Tegn cirklerne
+pygame.draw.circle(skaerm, (0, 0, 255), (centrum_x, centrum_y), 210)
+pygame.draw.circle(skaerm, (0, 0, 0), (centrum_x, centrum_y), 5)
+
+#  Tegn viserne
+
+
+
+# # Hent det aktuelle klokkeslæt
+# for i in range(6000):
+#     nu = datetime.datetime.now()
+#     sekunder = nu.second
+#     vinkel_grad_sekunder = math.radians(sekunder*6)       # 60 sekunder gange 6 = 360 grader
+#     x_min_slut = centrum_x + radius * math.sin(vinkel_grad_sekunder)      # x-koordinat for startpunkt
+#     y_min_slut = centrum_y + radius * math.cos(vinkel_grad_sekunder)      # y-koordinat for startpunkt
+#     pygame.draw.line(skaerm, (255, 255, 255), centrum_x, centrum_y, x_min_slut, y_min_slut, streg_tykkelse_Viser_sekundt)
+
+
+
+
+    
+
+# 3) Tegn tids indikatorerne
+
+
+for i in range (ANTAL_T):
+    vinkel = i * VINKEL_grad
+    vinkel_rad = math.radians(vinkel)  # omregn til radianer
+    x_start = centrum_x + radius * math.sin(vinkel_rad)      # x-koordinat for startpunkt
+    y_start = centrum_y + radius * math.cos(vinkel_rad)      # y-koordinat for startpunkt
+    start_punkt = (x_start, y_start)
+    x_slut = centrum_x + (radius-streg_laengde_T) * math.sin(vinkel_rad) # y-koordinat for startpunkt
+    y_slut = centrum_y + (radius-streg_laengde_T) * math.cos(vinkel_rad) # y-koordinat for startpunkt
+    slut_punkt = (x_slut, y_slut)
+    pygame.draw.line(skaerm, (0, 0, 0), start_punkt, slut_punkt, streg_tykkelse_T)
+
+for i in range (ANTAL_M):
+    vinkel = i * vinkel_grad_min
+    vinkel_rad = math.radians(vinkel)  # omregn til radianer
+    x_start = centrum_x + radius * math.sin(vinkel_rad)      # x-koordinat for startpunkt
+    y_start = centrum_y + radius * math.cos(vinkel_rad)      # y-koordinat for startpunkt
+    start_punkt = (x_start, y_start)
+    x_slut = centrum_x + (radius-streg_laengde_T) * math.sin(vinkel_rad) # y-koordinat for startpunkt
+    y_slut = centrum_y + (radius-streg_laengde_T) * math.cos(vinkel_rad) # y-koordinat for startpunkt
+    slut_punkt = (x_slut, y_slut)
+    pygame.draw.line(skaerm, (0, 0, 0), start_punkt, slut_punkt, streg_tykkelse_M)    
+
+
+pygame.display.flip()
+>>>>>>> c8e70abdb374a54ed5437bb6b5b7833c62d05c63
 
 # 4) Event-loop: luk pænt ved klik på kryds
 koerer = True
