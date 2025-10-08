@@ -1,0 +1,78 @@
+import sys
+import pandas as pd
+import sklearn as sk
+import matplotlib as mpl
+from sklearn import datasets
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+df=pd.read_csv('iris.csv')
+df = df.sample(frac=1, random_state=42).reset_index(drop=True) 
+df.dropna(inplace=True)
+#df_fillna = df.fillna(0)
+
+x = df.iloc[:, :2]
+y = df.target
+
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+x_train_small, y_train_small = x_train[:50], y_train[:50]
+
+k = 11
+knn_classifier = KNeighborsClassifier(n_neighbors=k)
+knn_classifier.fit(x_train_small, y_train_small)
+
+y_pred = knn_classifier.predict(x_test)
+
+accuracy = accuracy_score(y_test, y_pred)
+print(f"accuracy of KNN with k={k}: {accuracy *100:.2f}%")
+
+
+
+# Visualisering af KNN klassifikation
+
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
+
+# --- Visualisering ---
+h = 0.1  # grid step size
+x_min, x_max = x["sepal_length"].min() - 1, x["sepal_length"].max() + 1
+y_min, y_max = x["sepal_width"].min() - 1, x["sepal_width"].max() + 1
+
+xx, yy = np.meshgrid(
+    np.arange(x_min, x_max, h),
+    np.arange(y_min, y_max, h)
+)
+
+# Forudsig på hele grid'et
+Z = knn_classifier.predict(np.c_[xx.ravel(), yy.ravel()])
+Z = Z.reshape(xx.shape)
+
+# Baggrund (decision boundary)
+cmap_light = ListedColormap(["#FFAAAA", "#AAFFAA", "#AAAAFF"])
+cmap_bold = ListedColormap(["#FF0000", "#00FF00", "#0000FF"])
+
+plt.figure(figsize=(8, 6))
+plt.contourf(xx, yy, Z, cmap=cmap_light, alpha=0.4)
+
+# Træningspunkter
+plt.scatter(
+    x_train["sepal_length"], x_train["sepal_width"],
+    c=y_train, cmap=cmap_bold, edgecolor="k", marker="o", s=50, label="Train"
+)
+
+# Testpunkter
+plt.scatter(
+    x_test["sepal_length"], x_test["sepal_width"],
+    c=y_test, cmap=cmap_bold, edgecolor="k", marker="^", s=70, label="Test"
+)
+
+plt.xlabel("Sepal length")
+plt.ylabel("Sepal width")
+plt.title(f"kNN Decision Boundary (k={k}) • Accuracy={accuracy*100:.2f}%")
+plt.legend()
+plt.show()
