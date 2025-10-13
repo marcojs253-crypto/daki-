@@ -58,16 +58,19 @@ while True:
 #spil
 import pygame
 import math
+import random
 
 pygame.init()
 screen = pygame.display.set_mode((640, 480)) # Create a window of 640x480 pixels
 
-
-
+# game if there is ko kostant speed
+'''''
 box_position = (30, 30)
 while True:
     screen.fill((255, 255, 255)) # Fill the screen with white
     for event in pygame.event.get():
+        speed= []
+        speed=+1
 
 
        
@@ -81,14 +84,105 @@ while True:
            elif event.key == pygame.K_w:
                 box_position = (box_position[0], box_position[1]-10)
         
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            exit()
-            
-        
-
+           if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+    
         pygame.draw.rect(screen, (0, 128, 255), pygame.Rect(box_position[0], box_position[1], 60, 60))   
-                 
+        
         pygame.display.flip()
+'''''
+#konstant hastighed 
+# jeg har brug for at kassen bevæger sig med en konstant hastighed efter at jeg har trygget på en af tasterne
+'''''
+speed=0.01
+x_kommende_retning=0
+y_kommende_retning=0
+box_position = (30, 30)
+while True:
+    
+   
+    screen.fill((255, 255, 255)) # Fill the screen with white
+    for event in pygame.event.get():
+       if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_d:
+                x_kommende_retning = speed
+            elif event.key == pygame.K_a:
+                x_kommende_retning = -speed
+                
+            elif event.key == pygame.K_s:
+                y_kommende_retning = speed
+            elif event.key == pygame.K_w:
+                y_kommende_retning = -speed
+
+    box_position = (box_position[0]+x_kommende_retning, box_position[1]+y_kommende_retning)
+    pygame.draw.rect(screen, (0, 128, 255), pygame.Rect(box_position[0], box_position[1], 60, 60))   
+    pygame.display.flip()
+    
+    if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+'''
+# jeg har brug for at kassen bevæger sig med en konstant hastighed efter at jeg har trygget på en af tasterne
+
+speed=0.07
+x_kommende_retning=0
+y_kommende_retning=0
+apple_list = []
+for i in range(10):
+        x_værdier=random.randrange(0,640)
+        y_værdier=random.randrange(0,480)
+        apple_list.append((x_værdier, y_værdier))
+        print (x_værdier, y_værdier)
+
+box_position = [30, 30]
+while True:
+
+ 
+
+   
+    screen.fill((255, 255, 255)) # Fill the screen with white
+    for apple in apple_list:
+        pygame.draw.circle(screen, (255, 0, 0), apple, 10)
+    for event in pygame.event.get():
+       if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_d:
+                y_kommende_retning = 0
+                x_kommende_retning = speed
+            elif event.key == pygame.K_a:
+                x_kommende_retning = -speed
+                y_kommende_retning = 0
+            elif event.key == pygame.K_s:
+                x_kommende_retning = 0
+                y_kommende_retning = speed
+            elif event.key == pygame.K_w:
+                x_kommende_retning = 0
+                y_kommende_retning = -speed
+ 
+    box_position[0]+=x_kommende_retning 
+    box_position[1]+=y_kommende_retning
+# viskal ændre det sådan at kassen ikke kan gå ud af skærmen kommer den tilbage på den anden side
+    if box_position[0] > 630:
+        box_position[0] = 10
+    elif box_position[0] < 10:
+        box_position[0] = 630
+    if box_position[1] > 470:
+        box_position[1] = 10
+    elif box_position[1] < 10:
+        box_position[1] = 470
+    pygame.draw.rect(screen, (0, 128, 255), pygame.Rect(box_position[0], box_position[1], 60, 60))   
+    pygame.display.flip()
+    if box_position+10 == apple_list:
+         apple_list.remove(box_position)
+         
+    
+    if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+
+    
+
+
 
        
