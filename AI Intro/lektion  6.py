@@ -76,6 +76,9 @@ print("Negative Predictive Value (NPV):", tn / (tn + fn))
 print("F1-score:", f1_score(y_test, y_pred))
 
 
+
+
+
 # Beregn sandsynligheder
 y_proba = model.predict_proba(X_test_scaled)[:, 1]
 print(y_proba)
