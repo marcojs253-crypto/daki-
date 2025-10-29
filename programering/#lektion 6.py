@@ -179,12 +179,4 @@ while True:
     if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-<<<<<<< HEAD
-=======
-
-
-    
-
-
->>>>>>> eade352a1064f8c8eb852e23cfc7d0c6d22b8ed2
 
