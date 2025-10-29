@@ -232,9 +232,3 @@ while True:
                 pygame.quit()
                 exit()
 
-
-    
-
-
-
-       
