@@ -5,7 +5,7 @@ import random
 from opensimplex import OpenSimplex
 
 screen_size =[1000,800]
-felt_størrelse = 20
+felt_størrelse = 8
 
 def randomisere_seed(event, seed):
     if event.type == pygame.KEYDOWN:
@@ -20,15 +20,33 @@ def draw_grid(screen,seed):
         for x in range(screen_size[0]//felt_størrelse ):
             v = gen.noise2(x*0.075, y*0.075)
             if v < -0.5:
-                color = (0, 0, 180)      # Hav
+                felt_dictionary={
+                    'type': ["hav"],
+                    'bevægels_pris': [3],
+                    'farve': (0, 0, 180)
+                    
+                }       
             elif v < 0.3:
-                color = (51, 255, 51)  # græs
+                felt_dictionary = {
+                    'type': ["græs"],
+                    'bevægels_pris': [1],
+                    'farve': (51, 255, 51)
+                }
             elif v <= 0.75:
-                color = (64, 64, 64)  # bjerg
+                felt_dictionary={
+                    'type': ["bjerg"],
+                    'bevægels_pris': [5],
+                    'farve': (64, 64, 64)
+                }
             else:
-                color = (255, 70, 0)   # Lava
+                felt_dictionary = {
+                    'type': ["Lava"],
+                    'bevægels_pris': [1000],
+                    'farve': (255, 70, 0)
+                }
+
             rect= ((x*felt_størrelse), (y*felt_størrelse), felt_størrelse, felt_størrelse)
-            pygame.draw.rect(screen, color, rect)
+            pygame.draw.rect(screen, felt_dictionary['farve'], rect)
 
 def mousse_locading(event, position_højere, position_venstre):
         if event.type == pygame.MOUSEBUTTONDOWN:
