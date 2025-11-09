@@ -72,7 +72,8 @@ def main():
     position_venstre = None
     run_flag = True
     seed = 0
-    old_seed = seed
+    old_seed = seed 
+    
     while run_flag is True:
         draw_grid (screen, seed)
         
