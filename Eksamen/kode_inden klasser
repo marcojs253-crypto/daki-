@@ -1,0 +1,200 @@
+import random
+import pygame
+from opensimplex import OpenSimplex
+from queue import PriorityQueue
+
+screen_size = [1000, 800]
+felt_størrelse = 40
+
+# GLOBAL liste med alle felter
+felt_data = []
+
+
+# --------------------------
+# KORT GENERERING
+# --------------------------
+def definere_kortet(seed):
+    global felt_data
+    felt_data = []
+
+    gen = OpenSimplex(seed)
+
+    for y in range(screen_size[1] // felt_størrelse):
+        række = []
+        for x in range(screen_size[0] // felt_størrelse):
+
+            v = gen.noise2(x * 0.075, y * 0.075)
+
+            if v < -0.5:
+                felt = {'bevægels_pris': 3, 'farve': (0, 0, 180)}
+            elif v < 0.3:
+                felt = {'bevægels_pris': 1, 'farve': (51, 255, 51)}
+            elif v <= 0.75:
+                felt = {'bevægels_pris': 5, 'farve': (64, 64, 64)}
+            else:
+                felt = {'bevægels_pris': 1000, 'farve': (255, 70, 0)}
+
+            række.append(felt)
+        felt_data.append(række)
+
+
+def tegn_kort(screen):
+    for y in range(len(felt_data)):
+        for x in range(len(felt_data[0])):
+            farve = felt_data[y][x]['farve']
+            rect = (x * felt_størrelse, y * felt_størrelse, felt_størrelse, felt_størrelse)
+            pygame.draw.rect(screen, farve, rect)
+
+
+# --------------------------
+# INPUT
+# --------------------------
+def registre_klik(event, højre, venstre):
+    if event.type == pygame.MOUSEBUTTONDOWN:
+        if event.button == 3:
+            højre = [pygame.mouse.get_pos()]
+        if event.button == 1:
+            venstre = [pygame.mouse.get_pos()]
+    return højre, venstre
+
+
+def randomisere_seed(event, seed):
+    if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+        seed = random.randint(1, 100)
+        definere_kortet(seed)
+        return seed, True
+    return seed, False
+
+
+# --------------------------
+# A* SØGNING
+# --------------------------
+def heuristic(a, b):
+    (x1, y1) = a
+    (x2, y2) = b
+    return abs(x1 - x2) + abs(y1 - y2)
+
+
+def neighbors(pos):
+    x, y = pos
+    naboer = []
+    retninger = [(-1,1),(0,1),(1,1),(-1,0),(1,0),(-1,-1),(0,-1),(1,-1)]
+
+    for dx, dy in retninger:
+        nx, ny = x + dx, y + dy
+        if 0 <= nx < len(felt_data[0]) and 0 <= ny < len(felt_data):
+            naboer.append((nx, ny))
+    return naboer
+
+
+def terræn_bevægelse_pris(pos):
+    x, y = pos
+    return felt_data[y][x]['bevægels_pris']
+
+
+def A_star(start, målet):
+    uudforskede_positioner  = PriorityQueue()
+    uudforskede_positioner .put((0, start))
+
+    hvor_man_kom_fra = {start: None}
+    terræn_bevægelse_pris_so_far = {start: 0}
+
+    while not uudforskede_positioner .empty():
+        estimeret_total_pris, nuværende_position  = uudforskede_positioner .get()
+
+        if nuværende_position  == målet:
+            break
+
+        for next in neighbors(nuværende_position ):
+            ny_pris = terræn_bevægelse_pris_so_far[nuværende_position ] + terræn_bevægelse_pris(next)
+            if next not in terræn_bevægelse_pris_so_far or ny_pris < terræn_bevægelse_pris_so_far[next]:
+                terræn_bevægelse_pris_so_far[next] = ny_pris
+                uudforskede_positioner .put((ny_pris + heuristic(målet, next), next))
+                hvor_man_kom_fra[next] = nuværende_position 
+
+    return hvor_man_kom_fra, terræn_bevægelse_pris_so_far
+
+
+# --------------------------
+# VISUALISERING
+# --------------------------
+def tegn_sti(screen, hvor_man_kom_fra, start, målet):
+    if målet not in hvor_man_kom_fra:
+        return
+    
+    nuværende_position  = målet
+    while nuværende_position  != start:
+        x, y = nuværende_position 
+        pygame.draw.rect(screen, (0, 0, 0),
+                         (x * felt_størrelse, y * felt_størrelse, felt_størrelse, felt_størrelse))
+        nuværende_position  = hvor_man_kom_fra[nuværende_position ]
+
+
+def tegn_cirkel(screen, højre, venstre):
+    if højre:
+        pygame.draw.circle(screen, (158, 115, 178), højre[-1], felt_størrelse // 2)
+    if venstre:
+        pygame.draw.circle(screen, (255, 255, 255), venstre[-1], felt_størrelse // 2)
+
+
+def tegn_total(screen, total_terræn_bevægelse_pris):
+    font = pygame.font.Font(None, 32)
+    tekst = font.render(f"Pris: {total_terræn_bevægelse_pris}", True, (0, 0, 0))
+    screen.blit(tekst, (screen_size[0] - tekst.get_width() - 10, 10))
+
+
+# --------------------------
+# MAIN LOOP
+# --------------------------
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode(screen_size)
+    pygame.display.set_caption("A* Kortspil")
+
+    seed = 0
+    definere_kortet(seed)
+
+    venstre = []
+    højre = []
+    total_terræn_bevægelse_pris = 0
+
+    while True:
+
+        # TEGN KORT
+        tegn_kort(screen)
+
+        for event in pygame.event.get():
+
+            # Klik
+            højre, venstre = registre_klik(event, højre, venstre)
+
+            # Space → nyt kort
+            seed, reset = randomisere_seed(event, seed)
+            if reset:
+                venstre = []
+                højre = []
+                total_terræn_bevægelse_pris = 0
+
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return
+
+        # Beregn rute hvis begge klik findes
+        if venstre and højre:
+            start = (venstre[-1][0] // felt_størrelse, venstre[-1][1] // felt_størrelse)
+            målet = (højre[-1][0] // felt_størrelse, højre[-1][1] // felt_størrelse)
+
+            hvor_man_kom_fra, terræn_bevægelse_pris_so_far = A_star(start, målet)
+            total_terræn_bevægelse_pris = terræn_bevægelse_pris_so_far.get(målet, 0)
+
+            tegn_sti(screen, hvor_man_kom_fra, start, målet)
+
+        # Tegn overlays
+        tegn_total(screen, total_terræn_bevægelse_pris)
+        tegn_cirkel(screen, højre, venstre)
+
+        pygame.display.flip()
+
+
+if __name__ == "__main__":
+    main()
