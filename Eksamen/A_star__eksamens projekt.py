@@ -13,10 +13,6 @@ class Kort :
         self.screen = screen
         self.seed = 0
         self.felt_data = []   # 2D liste med alle felter
-        
-
-
-        ####################################
     def definere_kortet(self, seed):
         # Initialiserer OpenSimplex-generatoren med det ønskede seed
         gen = OpenSimplex(seed)
@@ -66,26 +62,29 @@ class Kort :
 
 class cirkeler_på_kortet(Kort):#supclass
     def __init__(self, screen):
+         # Kalder parent-klassens (Kort) __init__ metode, så vi får alle Kort's attributter
         super().__init__(screen)
-    def registre_klik(event, liste_af_højre__klik, liste_af_venstre__klik):
+        self.liste_af_højre__klik = []
+        self.liste_af_venstre__klik = []
+    def registre_klik(self,event ):
         
         
         if event.type == pygame.MOUSEBUTTONDOWN:
         
             if event.button == 3:
-                liste_af_højre__klik=[pygame.mouse.get_pos()]
+                self.liste_af_højre__klik=[pygame.mouse.get_pos()]
 
             if event.button == 1:
-                liste_af_venstre__klik=[pygame.mouse.get_pos()]
+                self.liste_af_venstre__klik=[pygame.mouse.get_pos()]
 
             
-        return liste_af_højre__klik, liste_af_venstre__klik
+        
 
-    def tegn_cirkel(screen, liste_af_højre__klik, liste_af_venstre__klik):
-        if liste_af_højre__klik and len(liste_af_højre__klik) > 0:
-            pygame.draw.circle(screen, (158, 115, 178), liste_af_højre__klik[-1], felt_størrelse // 2)
-        if liste_af_venstre__klik and len(liste_af_venstre__klik) > 0:
-            pygame.draw.circle(screen, (255, 255, 255), liste_af_venstre__klik[-1], felt_størrelse // 2)
+    def tegn_cirkel(self, screen):
+        if self.liste_af_højre__klik and len(self.liste_af_højre__klik) > 0:
+            pygame.draw.circle(screen, (158, 115, 178), self.liste_af_højre__klik[-1], felt_størrelse // 2)
+        if self.liste_af_venstre__klik and len(self.liste_af_venstre__klik) > 0:
+            pygame.draw.circle(screen, (255, 255, 255), self.liste_af_venstre__klik[-1], felt_størrelse // 2)
 
 
 
@@ -101,21 +100,16 @@ def randomisere_seed(event, kort, seed, liste_af_højre__klik, liste_af_venstre_
     return seed, liste_af_højre__klik, liste_af_venstre__klik, total_terræn_bevægelse_pris
 
 class A_star:
-    def __init__(self, nuvarande_position, nabo_liste, pris, totaal_pris, hvor_man_kom_fra, terræn_bevægelse_pris_so_far):
-        self.nuværende_position= nuvarande_position
-        self.nabo_liste = nabo_liste
-        self.pris = pris
-        self.totaal_pris = totaal_pris
-        self.hvor_man_kom_fra = hvor_man_kom_fra
-        self.terræn_bevægelse_pris_so_far = terræn_bevægelse_pris_so_far
+    def __init__(self, kort):
+        self.kort = kort
 
-    def heuristic(a, b):     
+    def heuristic(self,a, b):     
         (x1, y1) = a
         (x2, y2) = b
         return abs(x1 - x2) + abs(y1 - y2)
         
 
-    def neighbors(kort,nuvarande_position):
+    def find_naboer(self,nuvarande_position):
         nuvarande_x, nuvarande_y = nuvarande_position
         nabo_liste  = []
         retning_liste=[]
@@ -133,7 +127,7 @@ class A_star:
                 retning_liste.append(retning)
         return nabo_liste,retning_liste
     
-    def er_dirgonal(retning):
+    def er_dirgonal(self,retning):
         skrå_veje = [(1,1),
                     (-1,1),
                     (-1,-1),
@@ -143,15 +137,15 @@ class A_star:
         else:
             return False
 
-    def terræn_bevægelse_pris(kort,næste_position,retning):
+    def terræn_bevægelse_pris(self, næste_position, retning):
         x,y  = næste_position
-        pris = kort.felt_data[y][x]['bevægels_pris']
-        if A_star.er_dirgonal(retning):
+        pris = self.kort.felt_data[y][x]['bevægels_pris']
+        if self.er_dirgonal(retning):
            pris *= 1.414 
         return pris
         
 
-    def  Algoritmen_rute_beringer(kort,start, målet):
+    def  Algoritmen_rute_beringer(self, start, målet):
          # Priority queue: holder steder vi skal besøge, sorteret efter laveste pris
         uudforskede_positioner  = PriorityQueue()
         uudforskede_positioner .put((0, start))
@@ -164,28 +158,24 @@ class A_star:
             estimeret_total_pris, nuværende_position  = uudforskede_positioner.get()
             if nuværende_position  == målet:
                 break
-            naboer,retninger = A_star.neighbors(kort, nuværende_position )
+            naboer,retninger = self.find_naboer(nuværende_position )
             
             for næste_nabo,retning in zip(naboer,retninger): 
-                new_terræn_bevægelse_pris = terræn_bevægelse_pris_so_far[nuværende_position ] + A_star.terræn_bevægelse_pris(kort, næste_nabo, retning)
+                new_terræn_bevægelse_pris = terræn_bevægelse_pris_so_far[nuværende_position ] + self.terræn_bevægelse_pris(næste_nabo, retning)
                 if næste_nabo not in terræn_bevægelse_pris_so_far or new_terræn_bevægelse_pris < terræn_bevægelse_pris_so_far[næste_nabo]:
                     terræn_bevægelse_pris_so_far[næste_nabo] = new_terræn_bevægelse_pris
-                    estimeret_total_pris = new_terræn_bevægelse_pris + A_star.heuristic(målet, næste_nabo)
+                    estimeret_total_pris = new_terræn_bevægelse_pris + self.heuristic(målet, næste_nabo)
                     uudforskede_positioner .put((estimeret_total_pris, næste_nabo))
                     hvor_man_kom_fra[næste_nabo] = nuværende_position 
         return hvor_man_kom_fra, terræn_bevægelse_pris_so_far
 
 
-    def tegn_algoritme_sti(screen, hvor_man_kom_fra, start, målet):
+    def tegn_algoritme_sti(self,screen, hvor_man_kom_fra, start, målet):
         nuværende_position  = målet
         # 2. Gå baglæns gennem hvor_man_kom_fra og tegn felter
         while nuværende_position  != start:
             x, y = nuværende_position 
-            pygame.draw.rect(
-                screen,
-                (0, 0, 0),
-                (x * felt_størrelse, y * felt_størrelse, felt_størrelse, felt_størrelse)
-            )
+            pygame.draw.rect(screen, (0, 0, 0),(x * felt_størrelse, y * felt_størrelse, felt_størrelse, felt_størrelse))
             nuværende_position  = hvor_man_kom_fra[nuværende_position ]
 
 
@@ -198,7 +188,7 @@ class A_star:
             nuværende_position  = hvor_man_kom_fra.get(nuværende_position )
 
 
-    def tegn_total_pris(screen, total_terræn_bevægelse_pris):
+    def tegn_total_pris(self, screen, total_terræn_bevægelse_pris):
         font = pygame.font.Font(None, 42)
         tekst = font.render(f"Pris for ruten: {total_terræn_bevægelse_pris:.1f}", True, (255, 255, 255))
         pris_bredde = tekst.get_width()
@@ -211,9 +201,10 @@ def main():
     pygame.display.set_caption("kort_spillet")
     seed = 0
 
-    liste_af_venstre__klik = []
-    liste_af_højre__klik = []
+
     kort = Kort(screen)
+    Cirkeler = cirkeler_på_kortet(screen)
+    vejviser = A_star(kort)
     # tegn kort én gang
     kort.definere_kortet(seed)
     # global total_terræn_bevægelse_pris
@@ -223,27 +214,25 @@ def main():
 
         
         kort.tegn_kortet(screen)
-        if len(liste_af_højre__klik)>0 and len(liste_af_venstre__klik) > 0:
-            start_postion=liste_af_venstre__klik[-1]
-            slut_postion=liste_af_højre__klik[-1]
+        if len(Cirkeler.liste_af_højre__klik)>0 and len(Cirkeler.liste_af_venstre__klik) > 0:
+            start_postion=Cirkeler.liste_af_venstre__klik[-1]
+            slut_postion=Cirkeler.liste_af_højre__klik[-1]
             start = (start_postion[0]//felt_størrelse, start_postion[1]//felt_størrelse)
             slut = (slut_postion[0]//felt_størrelse, slut_postion[1]//felt_størrelse)
-            hvor_man_kom_fra, terræn_bevægelse_pris_so_far = A_star.Algoritmen_rute_beringer(kort,start, slut)
+            hvor_man_kom_fra, terræn_bevægelse_pris_so_far = vejviser.Algoritmen_rute_beringer(start, slut)
             total_terræn_bevægelse_pris = terræn_bevægelse_pris_so_far[slut]
 
-            A_star.tegn_algoritme_sti(screen, hvor_man_kom_fra, start, slut)
-        A_star.tegn_total_pris (screen,total_terræn_bevægelse_pris)
-        cirkeler_på_kortet.tegn_cirkel(screen, liste_af_højre__klik, liste_af_venstre__klik)
+            vejviser.tegn_algoritme_sti(screen, hvor_man_kom_fra, start, slut)
+        vejviser.tegn_total_pris (screen,total_terræn_bevægelse_pris)
+        Cirkeler.tegn_cirkel(screen,)
         pygame.display.flip()
         for event in pygame.event.get():
             
             
-            seed, liste_af_højre__klik, liste_af_venstre__klik,total_terræn_bevægelse_pris =(
-            randomisere_seed(event,kort, seed, liste_af_højre__klik, liste_af_venstre__klik,total_terræn_bevægelse_pris))
+            seed, Cirkeler.liste_af_højre__klik, Cirkeler.liste_af_venstre__klik,total_terræn_bevægelse_pris =(
+            randomisere_seed(event,kort, seed, Cirkeler.liste_af_højre__klik, Cirkeler.liste_af_venstre__klik,total_terræn_bevægelse_pris))
             
-
-            liste_af_højre__klik, liste_af_venstre__klik = cirkeler_på_kortet.registre_klik(event, liste_af_højre__klik, liste_af_venstre__klik)
-
+            Cirkeler.registre_klik(event)
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
