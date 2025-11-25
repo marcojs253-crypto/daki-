@@ -4,7 +4,7 @@ from opensimplex import OpenSimplex
 from queue import PriorityQueue
 
 screen_size = [1000, 800]
-felt_størrelse = 40
+felt_størrelse = 8
 
 # GLOBAL liste med alle felter
 felt_data = []
@@ -75,7 +75,7 @@ def heuristic(a, b):
     return abs(x1 - x2) + abs(y1 - y2)
 
 
-def neighbors(pos):
+def find_naboer(pos):
     x, y = pos
     naboer = []
     retninger = [(-1,1),(0,1),(1,1),(-1,0),(1,0),(-1,-1),(0,-1),(1,-1)]
@@ -105,7 +105,7 @@ def A_star(start, målet):
         if nuværende_position  == målet:
             break
 
-        for next in neighbors(nuværende_position ):
+        for next in find_naboer(nuværende_position ):
             ny_pris = terræn_bevægelse_pris_so_far[nuværende_position ] + terræn_bevægelse_pris(next)
             if next not in terræn_bevægelse_pris_so_far or ny_pris < terræn_bevægelse_pris_so_far[next]:
                 terræn_bevægelse_pris_so_far[next] = ny_pris

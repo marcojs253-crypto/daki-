@@ -77,7 +77,7 @@ class AStar:
         return abs(x1 - x2) + abs(y1 - y2)
 
     @staticmethod
-    def neighbors(kort, nuvarande_position):
+    def find_naboer(kort, nuvarande_position):
         nuvarande_x, nuvarande_y = nuvarande_position
         nabo_liste = []
         mulige_veje = [(-1, 1), (0, 1), (1, 1), (-1, 0), (1, 0), (-1, -1), (0, -1), (1, -1)]
@@ -103,7 +103,7 @@ class AStar:
             _, nuværende_position  = uudforskede_positioner .get()
             if nuværende_position  == målet:
                 break
-            for next_pos in AStar.neighbors(kort, nuværende_position ):
+            for next_pos in AStar.find_naboer(kort, nuværende_position ):
                 new_terræn_bevægelse_pris = terræn_bevægelse_pris_so_far[nuværende_position ] + AStar.terræn_bevægelse_pris(kort, next_pos)
                 if next_pos not in terræn_bevægelse_pris_so_far or new_terræn_bevægelse_pris < terræn_bevægelse_pris_so_far[next_pos]:
                     terræn_bevægelse_pris_so_far[next_pos] = new_terræn_bevægelse_pris
