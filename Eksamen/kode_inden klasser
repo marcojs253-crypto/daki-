@@ -69,7 +69,7 @@ def randomisere_seed(event, seed):
 # --------------------------
 # A* SØGNING
 # --------------------------
-def heuristic(a, b):
+def heuristik(a, b):
     (x1, y1) = a
     (x2, y2) = b
     return abs(x1 - x2) + abs(y1 - y2)
@@ -109,7 +109,7 @@ def A_star(start, målet):
             ny_pris = terræn_bevægelse_pris_so_far[nuværende_position ] + terræn_bevægelse_pris(next)
             if next not in terræn_bevægelse_pris_so_far or ny_pris < terræn_bevægelse_pris_so_far[next]:
                 terræn_bevægelse_pris_so_far[next] = ny_pris
-                uudforskede_positioner .put((ny_pris + heuristic(målet, next), next))
+                uudforskede_positioner .put((ny_pris + heuristik(målet, next), next))
                 hvor_man_kom_fra[next] = nuværende_position 
 
     return hvor_man_kom_fra, terræn_bevægelse_pris_so_far

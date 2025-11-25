@@ -71,7 +71,7 @@ def randomisere_seed(event, kort, seed, liste_af_højre__klik, liste_af_venstre_
 
 class AStar:
     @staticmethod
-    def heuristic(a, b):
+    def heuristik(a, b):
         (x1, y1) = a
         (x2, y2) = b
         return abs(x1 - x2) + abs(y1 - y2)
@@ -107,7 +107,7 @@ class AStar:
                 new_terræn_bevægelse_pris = terræn_bevægelse_pris_so_far[nuværende_position ] + AStar.terræn_bevægelse_pris(kort, next_pos)
                 if next_pos not in terræn_bevægelse_pris_so_far or new_terræn_bevægelse_pris < terræn_bevægelse_pris_so_far[next_pos]:
                     terræn_bevægelse_pris_so_far[next_pos] = new_terræn_bevægelse_pris
-                    estimeret_total_pris = new_terræn_bevægelse_pris + AStar.heuristic(målet, next_pos)
+                    estimeret_total_pris = new_terræn_bevægelse_pris + AStar.heuristik(målet, next_pos)
                     uudforskede_positioner .put((estimeret_total_pris, next_pos))
                     hvor_man_kom_fra[next_pos] = nuværende_position 
         return hvor_man_kom_fra, terræn_bevægelse_pris_so_far

@@ -13,20 +13,18 @@ class Kort :
         self.screen = screen
         self.seed = 0
         self.felt_data = []   # 2D liste med alle felter
-
-     
     def definere_kortet(self, seed):
         # Initialiserer OpenSimplex-generatoren med det ønskede seed
         gen = OpenSimplex(seed)
         for y in range(screen_size[1] // felt_størrelse):
             række_for_x_værdierne = []
             for x in range(screen_size[0] // felt_størrelse):
-                 # noise2() giver et tal mellem -1 og 1
+                 # Beregner en støj-værdi for dette felt, så landskabet bliver varieret men kontinuerligt 
                 v = gen.noise2(x * 0.08, y * 0.08) #højere værdi mere ugroperet
                 if v < -0.5:
                     felt_dictionary = {
                         # type = hav
-                        'bevægels_pris': 2,
+                        'bevægels_pris': 3,
                         'farve': (0, 0, 180),
                         'felt_koordinat': (x, y)
                     }
@@ -40,7 +38,7 @@ class Kort :
                 elif v <= 0.75:
                     felt_dictionary = {
                         # type = bjerg
-                        'bevægels_pris': 3,
+                        'bevægels_pris': 5,
                         'farve': (64, 64, 64),
                         'felt_koordinat': (x, y)
                     }
@@ -54,7 +52,7 @@ class Kort :
                 række_for_x_værdierne.append(felt_dictionary)
             self.felt_data.append(række_for_x_værdierne)
 
-    # Denne metode tegner kortet på skærmen baseret på felt_data, for at ungå side efekts.
+    # laver ny funktion for at ungå side efekts.
     def tegn_kortet(self,screen):
             for y in range(screen_size[1] // felt_størrelse):
                 for x in range(screen_size[0] // felt_størrelse):
@@ -66,14 +64,11 @@ class cirkeler_på_kortet(Kort):#supclass
     def __init__(self, screen):
          # Kalder parent-klassens (Kort) __init__ metode, så vi får alle Kort's attributter
         super().__init__(screen)
-        # Tilføj ekstra attributter som kun denne klasse har
         self.liste_af_højre__klik = []
         self.liste_af_venstre__klik = []
-
-
     def registre_klik(self,event ):
         
-         # Tjek om det var et museklik
+        
         if event.type == pygame.MOUSEBUTTONDOWN:
         
             if event.button == 3:
@@ -86,7 +81,6 @@ class cirkeler_på_kortet(Kort):#supclass
         
 
     def tegn_cirkel(self, screen):
-         # Tjek om der er et højreklik gemt og at listen ikke er tom
         if self.liste_af_højre__klik and len(self.liste_af_højre__klik) > 0:
             pygame.draw.circle(screen, (158, 115, 178), self.liste_af_højre__klik[-1], felt_størrelse // 2)
         if self.liste_af_venstre__klik and len(self.liste_af_venstre__klik) > 0:
@@ -94,49 +88,42 @@ class cirkeler_på_kortet(Kort):#supclass
 
 
 
-def randomisere_seed(event, seed, kort, cirkler, total_terræn_bevægelse_pris):
+def randomisere_seed(event, kort, seed, liste_af_højre__klik, liste_af_venstre__klik, total_terræn_bevægelse_pris):
     #funktion til at randomisere seed og nulstille variabler via mellemrumstasten,
     # så kortet kan tegnes på ny, og spilleren kan vælge nye start og slut
     if event.type == pygame.KEYDOWN:
         if event.key == pygame.K_SPACE:
             seed = random.randint(1, 100)
-            cirkler.liste_af_højre__klik = []
-            cirkler.liste_af_venstre__klik = []
+            liste_af_højre__klik = []
+            liste_af_venstre__klik = []
             total_terræn_bevægelse_pris = 0
             kort.felt_data = []         
             kort.definere_kortet(seed)
-    return seed, cirkler.liste_af_højre__klik, cirkler.liste_af_venstre__klik, total_terræn_bevægelse_pris
+    return seed, liste_af_højre__klik, liste_af_venstre__klik, total_terræn_bevægelse_pris
 
 class A_star:
-    # Denne klasse får kun kortets reference - den skal bruge det til at kigge på terræn-priser
     def __init__(self, kort):
         self.kort = kort
 
-    def heuristik(self,a, b):   
-         # Pak koordinaterne ud  
+    def heuristik(self,a, b):     
         (x1, y1) = a
         (x2, y2) = b
-
         return abs(x1 - x2) + abs(y1 - y2)
         
 
     def find_naboer(self,nuvarande_position):
-         # Pak positionen ud
         nuvarande_x, nuvarande_y = nuvarande_position
-        nabo_liste  = [] 
+        nabo_liste  = []
         retning_for_naboer_liste=[]
         mulige_veje= [(-1,1),   (0,1),   (1,1),
                     (-1,0),            (1,0),
                     (-1,-1),  (0,-1),  (1,-1)]
         
-        # for loop der går gennem hver mulig retning
+        # laver en løkke der tjekke alle retningeer
         for forskydning_x, forskydning_y in mulige_veje:
-            # Beregn naboens position
-            nabo_x = nuvarande_x + forskydning_x
-            nabo_y = nuvarande_y + forskydning_y
-            # finder retningen ved at træække nuværende position fra nabo positionen
+            nabo_x,nabo_y = nuvarande_x + forskydning_x, nuvarande_y + forskydning_y
             retning = (nuvarande_x-nabo_x, nuvarande_y- nabo_y)
-        # Tjekker er nabo_x mellem 0 og bredden og  nabo_y mellem 0 og højden og så tilføjer vi dem der er 
+        #Vi tjekker er nabo_x mellem 0 og bredden og  nabo_y mellem 0 og højden og så tilføjer vi dem der er 
             if 0<= nabo_x <(screen_size[0] // felt_størrelse) and 0<= nabo_y <(screen_size[1] // felt_størrelse):
                 nabo_liste.append((nabo_x, nabo_y))
                 retning_for_naboer_liste.append(retning)
@@ -153,77 +140,60 @@ class A_star:
             return False
 
     def terræn_bevægelse_pris(self, næste_position, retning):
-        x, y  = næste_position
+        x,y  = næste_position
         pris = self.kort.felt_data[y][x]['bevægels_pris']
-        
-        if self.er_dirgonal(retning): # Tjekker om er_dirgonal returener True
-             # Hvis ja, gang pris med kvadratroden af 2 (ca. 1.414) 
+        if self.er_dirgonal(retning):
            pris *= 1.414 
         return pris
         
 
     def  Algoritmen_rute_beringer(self, start, målet):
-         # Priority queue: holder steder vi skal besøge, sorteret efter laveste pris i en tuple (pris, position) som en kø
+         # Priority queue: holder steder vi skal besøge, sorteret efter laveste pris
         uudforskede_positioner  = PriorityQueue()
-        # Tilføj startpunktet til køen med pris 0
-        uudforskede_positioner.put((0, start))
-        # Dictionary der holder styr på hvor vi kom fra
-        # Key = position, Value = forrige position
-        hvor_man_kom_fra_dict = dict()
-        # Dictionary der holder styr på den billigste pris til hver position
-        # Key = position, Value = billigste pris hidtil
-        bevægelse_pris_hidtil_dict = dict()
-        # Start positionens har ingen forrige position og pris 0
-        hvor_man_kom_fra_dict[start] = None
-        bevægelse_pris_hidtil_dict[start] = 0
+        uudforskede_positioner .put((0, start))
+        hvor_man_kom_fra = dict()
+        terræn_bevægelse_pris_so_far = dict()
+        hvor_man_kom_fra[start] = None
+        terræn_bevægelse_pris_so_far[start] = 0
 
-        # Så længe der er positioner at undersøge, skal vi fortsætte
-        while not uudforskede_positioner.empty():
-            # Hent den position med LAVESTE estimerede total pris
-            # PriorityQueue giver os automatisk den billigste først
+        while not uudforskede_positioner .empty():
             estimeret_total_pris, nuværende_position  = uudforskede_positioner.get()
             if nuværende_position  == målet:
                 break
-            # Find alle naboer og retninger til den nuværende position
-            naboer_liste, retninger_liste = self.find_naboer(nuværende_position )
-
-            # Gå gennem hver nabo og dens retning, zip bruges til at parre dem sammen
-            for næste_nabo,retning in zip(naboer_liste,retninger_liste): 
-                # her finder man den nye pris ved at tage prisen for den nuværnde position
-                # og lægge prisen for at gå til den næste nabo
-                ny_terræn_bevægelse_pris = bevægelse_pris_hidtil_dict[nuværende_position ] + self.terræn_bevægelse_pris(næste_nabo, retning)
-                # hvis næste_babo ikke har været der før eller den nye pris er billigere, så sker denne branching
-                if næste_nabo not in bevægelse_pris_hidtil_dict or ny_terræn_bevægelse_pris < bevægelse_pris_hidtil_dict[næste_nabo]:
-                    # gemmer nye billigste pris til næste_nabo
-                    bevægelse_pris_hidtil_dict[næste_nabo] = ny_terræn_bevægelse_pris
-                    # Beregn den estimerede total pris = ny pris + gæt
-                    estimeret_total_pris = ny_terræn_bevægelse_pris + self.heuristik(målet, næste_nabo)
-                    # Tilføj naboen til køen med dens estimerede total pris
-                    uudforskede_positioner.put((estimeret_total_pris, næste_nabo))
-                    # Opdater hvor vi kom fra så det indkludere næste_nabo
-                    hvor_man_kom_fra_dict[næste_nabo] = nuværende_position 
-
-        return hvor_man_kom_fra_dict, bevægelse_pris_hidtil_dict
+            naboer,retninger = self.find_naboer(nuværende_position )
+            
+            for næste_nabo,retning in zip(naboer,retninger): 
+                new_terræn_bevægelse_pris = terræn_bevægelse_pris_so_far[nuværende_position ] + self.terræn_bevægelse_pris(næste_nabo, retning)
+                if næste_nabo not in terræn_bevægelse_pris_so_far or new_terræn_bevægelse_pris < terræn_bevægelse_pris_so_far[næste_nabo]:
+                    terræn_bevægelse_pris_so_far[næste_nabo] = new_terræn_bevægelse_pris
+                    estimeret_total_pris = new_terræn_bevægelse_pris + self.heuristik(målet, næste_nabo)
+                    uudforskede_positioner .put((estimeret_total_pris, næste_nabo))
+                    hvor_man_kom_fra[næste_nabo] = nuværende_position 
+        return hvor_man_kom_fra, terræn_bevægelse_pris_so_far
 
 
     def tegn_algoritme_sti(self,screen, hvor_man_kom_fra, start, målet):
-        # går baglends og tegner stien fra målet til start
         nuværende_position  = målet
+        # 2. Gå baglæns gennem hvor_man_kom_fra og tegn felter
         while nuværende_position  != start:
             x, y = nuværende_position 
             pygame.draw.rect(screen, (0, 0, 0),(x * felt_størrelse, y * felt_størrelse, felt_størrelse, felt_størrelse))
-            #pga hvor_man_kom_fra er en dictionary bruges at finde den forrige position,
-            # da det er value for key nuværende_position
             nuværende_position  = hvor_man_kom_fra[nuværende_position ]
-            
+
+
+        if len(hvor_man_kom_fra) == 0 or målet not in hvor_man_kom_fra:
+            return#det er måde man kan gå ud af en funktion hvis en betingelse er opfyldt
+        nuværende_position  = målet
+        while nuværende_position  != start:
+            x, y = nuværende_position 
+            pygame.draw.rect(screen, (0, 0, 0), (x * felt_størrelse, y * felt_størrelse, felt_størrelse, felt_størrelse))
+            nuværende_position  = hvor_man_kom_fra.get(nuværende_position )
+
 
     def tegn_total_pris(self, screen, total_terræn_bevægelse_pris):
-         # Skrifttype = størrelse 42
         font = pygame.font.Font(None, 42)
-        # Lav teksten og .1f = 1 decimal)
         tekst = font.render(f"Pris for ruten: {total_terræn_bevægelse_pris:.1f}", True, (255, 255, 255))
         pris_bredde = tekst.get_width()
-        # screen_size[0] = 1000 (højre kant), minus bredde, minus 10 pixels margin
         screen.blit(tekst, (screen_size[0] - pris_bredde - 10, 10))
         
     
@@ -232,19 +202,20 @@ def main():
     screen = pygame.display.set_mode((screen_size[0], screen_size[1]))
     pygame.display.set_caption("kort_spillet")
     seed = 0
-    total_terræn_bevægelse_pris= 0
 
-    # Initialiser kort, cirkeler og A* algoritme
+
     kort = Kort(screen)
     Cirkeler = cirkeler_på_kortet(screen)
     vejviser = A_star(kort)
     # tegn kort én gang
     kort.definere_kortet(seed)
-    
+    # global total_terræn_bevægelse_pris
+    total_terræn_bevægelse_pris= 0
     
     while True:
+
+        
         kort.tegn_kortet(screen)
-        # Tjek om brugeren har klikket BÅDE højre OG venstre (= valgt start OG slut)
         if len(Cirkeler.liste_af_højre__klik)>0 and len(Cirkeler.liste_af_venstre__klik) > 0:
             start_postion=Cirkeler.liste_af_venstre__klik[-1]
             slut_postion=Cirkeler.liste_af_højre__klik[-1]
@@ -260,8 +231,8 @@ def main():
         for event in pygame.event.get():
             
             
-            seed, Cirkeler.liste_af_højre__klik, Cirkeler.liste_af_venstre__klik, total_terræn_bevægelse_pris =(
-            randomisere_seed(event, seed, kort, Cirkeler, total_terræn_bevægelse_pris))
+            seed, Cirkeler.liste_af_højre__klik, Cirkeler.liste_af_venstre__klik,total_terræn_bevægelse_pris =(
+            randomisere_seed(event,kort, seed, Cirkeler.liste_af_højre__klik, Cirkeler.liste_af_venstre__klik,total_terræn_bevægelse_pris))
             
             Cirkeler.registre_klik(event)
             if event.type == pygame.QUIT:
