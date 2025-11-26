@@ -88,7 +88,7 @@ class cirkeler_på_kortet(Kort):#supclass
 
 
 
-def randomisere_seed(event, kort, seed, liste_af_højre__klik, liste_af_venstre__klik, total_terræn_bevægelse_pris):
+def nutstil_kortet(event, kort, seed, liste_af_højre__klik, liste_af_venstre__klik, total_terræn_bevægelse_pris):
     #funktion til at randomisere seed og nulstille variabler via mellemrumstasten,
     # så kortet kan tegnes på ny, og spilleren kan vælge nye start og slut
     if event.type == pygame.KEYDOWN:
@@ -190,7 +190,7 @@ class A_star:
             nuværende_position  = hvor_man_kom_fra.get(nuværende_position )
 
 
-    def tegn_total_pris(self, screen, total_terræn_bevægelse_pris):
+    def tegn_info(self, screen, total_terræn_bevægelse_pris):
         font = pygame.font.Font(None, 42)
         tekst = font.render(f"Pris for ruten: {total_terræn_bevægelse_pris:.1f}", True, (255, 255, 255))
         pris_bredde = tekst.get_width()
@@ -225,14 +225,14 @@ def main():
             total_terræn_bevægelse_pris = terræn_bevægelse_pris_so_far[slut]
 
             vejviser.tegn_algoritme_sti(screen, hvor_man_kom_fra, start, slut)
-        vejviser.tegn_total_pris (screen,total_terræn_bevægelse_pris)
+        vejviser.tegn_info (screen,total_terræn_bevægelse_pris)
         Cirkeler.tegn_cirkel(screen,)
         pygame.display.flip()
         for event in pygame.event.get():
             
             
             seed, Cirkeler.liste_af_højre__klik, Cirkeler.liste_af_venstre__klik,total_terræn_bevægelse_pris =(
-            randomisere_seed(event,kort, seed, Cirkeler.liste_af_højre__klik, Cirkeler.liste_af_venstre__klik,total_terræn_bevægelse_pris))
+            nutstil_kortet(event,kort, seed, Cirkeler.liste_af_højre__klik, Cirkeler.liste_af_venstre__klik,total_terræn_bevægelse_pris))
             
             Cirkeler.registre_klik(event)
             if event.type == pygame.QUIT:

@@ -58,7 +58,7 @@ class CirkelerPåKortet(Kort):
             pygame.draw.circle(screen, (255, 255, 255), liste_af_venstre__klik[-1], felt_størrelse // 2)
 
 
-def randomisere_seed(event, kort, seed, liste_af_højre__klik, liste_af_venstre__klik, total_terræn_bevægelse_pris):
+def nutstil_kortet(event, kort, seed, liste_af_højre__klik, liste_af_venstre__klik, total_terræn_bevægelse_pris):
     if event.type == pygame.KEYDOWN:
         if event.key == pygame.K_SPACE:
             seed = random.randint(1, 100)
@@ -143,7 +143,7 @@ def vis_felt_tælling(screen, tæller):
     screen.blit(billede, (10, 40))
 #####################################
 
-def tegn_total_pris(screen, total_terræn_bevægelse_pris):
+def tegn_info(screen, total_terræn_bevægelse_pris):
     font = pygame.font.Font(None, 32)
     tekst = font.render(f"Pris for ruten: {total_terræn_bevægelse_pris}", True, (0, 0, 0))
     screen.blit(tekst, (screen_size[0] - tekst.get_width() - 10, 10))
@@ -166,7 +166,7 @@ def main():
         kort.tegn_kortet()
 
         for event in pygame.event.get():
-            seed, liste_af_højre__klik, liste_af_venstre__klik, total_terræn_bevægelse_pris = randomisere_seed(
+            seed, liste_af_højre__klik, liste_af_venstre__klik, total_terræn_bevægelse_pris = nutstil_kortet(
                 event, kort, seed, liste_af_højre__klik, liste_af_venstre__klik, total_terræn_bevægelse_pris
             )
             liste_af_højre__klik, liste_af_venstre__klik = CirkelerPåKortet.registre_klik(
@@ -188,7 +188,7 @@ def main():
             tæller = tegn_algoritme_sti_animated(screen, hvor_man_kom_fra, start, slut, kort)
             vis_felt_tælling(screen, tæller)
 
-        tegn_total_pris(screen, total_terræn_bevægelse_pris)
+        tegn_info(screen, total_terræn_bevægelse_pris)
         CirkelerPåKortet.tegn_cirkel(screen, liste_af_højre__klik, liste_af_venstre__klik)
 
         pygame.display.flip()

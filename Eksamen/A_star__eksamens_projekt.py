@@ -4,6 +4,8 @@ from opensimplex import OpenSimplex
 
 from queue import PriorityQueue
 
+
+#globalt scope så man hurtigt og nemt kan ændre skærm størrelse og felt størrelse
 screen_size = [1000, 800]
 felt_størrelse = 10
 
@@ -23,30 +25,43 @@ class Kort :
             for x in range(screen_size[0] // felt_størrelse):
                  # noise2() giver et tal mellem -1 og 1
                 v = gen.noise2(x * 0.08, y * 0.08) #højere værdi mere ugroperet
-                if v < -0.5:
+                if v < -0.6:
                     felt_dictionary = {
-                        # type = hav
-                        'bevægels_pris': 2,
-                        'farve': (0, 0, 180),
+                        'type': 'hav',
+                        'bevægels_pris': 14,
+                        'farve': (10, 10, 180),
                         'felt_koordinat': (x, y)
                     }
-                elif v < 0.3:
+                elif v < -0.4:
                     felt_dictionary = {
-                        # type = græs
-                        'bevægels_pris': 1,
+                        'type': 'hav',
+                        'bevægels_pris': 14,
+                        'farve': (0, 0, 220),
+                        'felt_koordinat': (x, y)
+                    }
+                elif v < 0.2:
+                    felt_dictionary = {
+                        'type': 'græs',
+                        'bevægels_pris': 10,
                         'farve': (51, 255, 51),
                         'felt_koordinat': (x, y)
                     }
+                elif v <= 0.5:
+                    felt_dictionary = {
+                        'type': 'bjerg',
+                        'bevægels_pris': 15,
+                        'farve': (50, 50, 40),
+                        'felt_koordinat': (x, y)}
                 elif v <= 0.75:
                     felt_dictionary = {
-                        # type = bjerg
-                        'bevægels_pris': 3,
-                        'farve': (64, 64, 64),
+                        'type': 'bjerg',
+                        'bevægels_pris': 15,
+                        'farve': (35, 35, 30),
                         'felt_koordinat': (x, y)
                     }
                 else:
                     felt_dictionary = {
-                        # type = lava
+                        'type': 'lava',
                         'bevægels_pris': 1000,
                         'farve': (255, 70, 0),
                         'felt_koordinat': (x, y)
@@ -61,6 +76,7 @@ class Kort :
                     farve = self.felt_data[y][x]['farve']
                     rect = (x * felt_størrelse, y * felt_størrelse, felt_størrelse, felt_størrelse)
                     pygame.draw.rect(screen, farve, rect)
+                    #void retunere = ingenting, tenger kun
 
 class cirkeler_på_kortet(Kort):#supclass
     def __init__(self, screen):
@@ -75,10 +91,8 @@ class cirkeler_på_kortet(Kort):#supclass
         
          # Tjek om det var et museklik
         if event.type == pygame.MOUSEBUTTONDOWN:
-        
             if event.button == 3:
                 self.liste_af_højre__klik=[pygame.mouse.get_pos()]
-
             if event.button == 1:
                 self.liste_af_venstre__klik=[pygame.mouse.get_pos()]
 
@@ -88,14 +102,23 @@ class cirkeler_på_kortet(Kort):#supclass
     def tegn_cirkel(self, screen):
          # Tjek om der er et højreklik gemt og at listen ikke er tom
         if self.liste_af_højre__klik and len(self.liste_af_højre__klik) > 0:
-            pygame.draw.circle(screen, (158, 115, 178), self.liste_af_højre__klik[-1], felt_størrelse // 2)
+            # Konverter pixel-koordinater til grid-koordinater
+            mus_x, mus_y = self.liste_af_højre__klik[-1]
+            grid_x = mus_x // felt_størrelse
+            grid_y = mus_y // felt_størrelse
+            rect = ( grid_x * felt_størrelse, grid_y * felt_størrelse, felt_størrelse, felt_størrelse)
+            pygame.draw.rect(screen, (158, 115, 178), rect)
         if self.liste_af_venstre__klik and len(self.liste_af_venstre__klik) > 0:
-            pygame.draw.circle(screen, (255, 255, 255), self.liste_af_venstre__klik[-1], felt_størrelse // 2)
+            mus_x, mus_y = self.liste_af_venstre__klik[-1]
+            grid_x = mus_x // felt_størrelse
+            grid_y = mus_y // felt_størrelse
+            rect = ( grid_x * felt_størrelse, grid_y * felt_størrelse, felt_størrelse, felt_størrelse)
+            pygame.draw.rect(screen, (255, 255, 255), rect)
 
 
 
-def randomisere_seed(event, seed, kort, cirkler, total_terræn_bevægelse_pris):
-    #funktion til at randomisere seed og nulstille variabler via mellemrumstasten,
+def nutstil_kortet(event, seed, kort, cirkler, hvor_man_kom_fra, start, slut, total_terræn_bevægelse_pris):
+      #funktion til at randomisere seed og nulstille variabler via mellemrumstasten,
     # så kortet kan tegnes på ny, og spilleren kan vælge nye start og slut
     if event.type == pygame.KEYDOWN:
         if event.key == pygame.K_SPACE:
@@ -105,18 +128,29 @@ def randomisere_seed(event, seed, kort, cirkler, total_terræn_bevægelse_pris):
             total_terræn_bevægelse_pris = 0
             kort.felt_data = []         
             kort.definere_kortet(seed)
-    return seed, cirkler.liste_af_højre__klik, cirkler.liste_af_venstre__klik, total_terræn_bevægelse_pris
+            # opdatere stien så 
+            hvor_man_kom_fra = None
+            start = None
+            slut = None
+
+    return seed, hvor_man_kom_fra, start, slut, cirkler.liste_af_højre__klik, cirkler.liste_af_venstre__klik, total_terræn_bevægelse_pris
+
 
 class A_star:
     # Denne klasse får kun kortets reference - den skal bruge det til at kigge på terræn-priser
     def __init__(self, kort):
         self.kort = kort
-
+        self.terræn_tæller = { 
+            'hav': 0,
+            'græs': 0,
+            'bjerg': 0,
+            'lava': 0}
+        self.terræn_typer_i_stien = set()
     def heuristik(self,a, b):   
          # Pak koordinaterne ud  
         (x1, y1) = a
         (x2, y2) = b
-
+        #abs = absolut værdi = nomerisk værrdi
         return abs(x1 - x2) + abs(y1 - y2)
         
 
@@ -134,8 +168,8 @@ class A_star:
             # Beregn naboens position
             nabo_x = nuvarande_x + forskydning_x
             nabo_y = nuvarande_y + forskydning_y
-            # finder retningen ved at træække nuværende position fra nabo positionen
-            retning = (nuvarande_x-nabo_x, nuvarande_y- nabo_y)
+            # finder retningen ved at trække nuværende position fra nabo positionen
+            retning = (nabo_x-nuvarande_x, nabo_y-nuvarande_y)
         # Tjekker er nabo_x mellem 0 og bredden og  nabo_y mellem 0 og højden og så tilføjer vi dem der er 
             if 0<= nabo_x <(screen_size[0] // felt_størrelse) and 0<= nabo_y <(screen_size[1] // felt_størrelse):
                 nabo_liste.append((nabo_x, nabo_y))
@@ -208,6 +242,8 @@ class A_star:
 
     def tegn_algoritme_sti(self,screen, hvor_man_kom_fra, start, målet):
         # går baglends og tegner stien fra målet til start
+        if hvor_man_kom_fra is None or start is None or målet is None:
+            return  # Tegn ikke noget hvis ingen sti
         nuværende_position  = målet
         while nuværende_position  != start:
             x, y = nuværende_position 
@@ -217,14 +253,71 @@ class A_star:
             nuværende_position  = hvor_man_kom_fra[nuværende_position ]
             
 
-    def tegn_total_pris(self, screen, total_terræn_bevægelse_pris):
-         # Skrifttype = størrelse 42
+    
+    
+    def tegn_pris (self, screen, total_terræn_bevægelse_pris,):
+        # Skrifttype = størrelse 42
         font = pygame.font.Font(None, 42)
+        
         # Lav teksten og .1f = 1 decimal)
-        tekst = font.render(f"Pris for ruten: {total_terræn_bevægelse_pris:.1f}", True, (255, 255, 255))
+        tekst = font.render(f"Pris for ruten: {total_terræn_bevægelse_pris:.1f}", True, (0, 0, 0))
         pris_bredde = tekst.get_width()
         # screen_size[0] = 1000 (højre kant), minus bredde, minus 10 pixels margin
         screen.blit(tekst, (screen_size[0] - pris_bredde - 10, 10))
+            
+    def definere_terræn_tælling(self, hvor_man_kom_fra=None, start=None, målet=None):
+        self.terræn_tæller = {
+                'hav': 0,
+                'græs': 0,
+                'bjerg': 0,
+                'lava': 0
+            }
+             # Set til at gemme hvilke typer vi møder.
+             # et set kan kun indeholde hver værdi ÉN gang
+        self.terræn_typer_i_stien = set()  # Tom mængde
+        if hvor_man_kom_fra is not None and start is not None and målet is not None:
+
+            nuværende_position = målet
+            while nuværende_position != start:
+                x, y = nuværende_position
+                terræn_type = self.kort.felt_data[y][x]['type']
+                #ligger 1 til dictionaryet for den fundne terræn type
+                self.terræn_tæller[terræn_type] += 1
+                self.terræn_typer_i_stien.add(terræn_type)  # ← Tilføj type til set
+                nuværende_position = hvor_man_kom_fra[nuværende_position]
+        return self.terræn_tæller, self.terræn_typer_i_stien
+    
+    def tegn_sum_af_terræn (self, screen,terræn_typer_i_stien):
+        font = pygame.font.Font(None, 42)
+        # unikt for sets = man kan tilføje n antal af x og y
+        # men længden forbliver 2 (x og y)
+        antal_typer = len(terræn_typer_i_stien)
+        stat_tekst = font.render(f"Terræn-typer: {antal_typer}", True, (0, 0, 0))
+        stat_bredde = stat_tekst.get_width()
+        screen.blit(stat_tekst, (screen_size[0] - stat_bredde - 10, 60))
+    def tegn_terræn_antal(self, screen,terræn_tæller):
+        font = pygame.font.Font(None, 42) 
+        #hvor langt nede teksten skal tegnes
+        y_offset = 100
+        #.items() er en metode der konverterer en dictionary til en liste af (key, value) par.
+        # så her går loopet gennem hvert key (terræn) og value(antal) i listen
+        for terræn, antal in terræn_tæller.items():
+            # hvis der mere 0 af en terræn type, så tegnes den
+            if antal > 0:
+                stat_tekst = font.render(f"{terræn}: {antal}", True, (0, 0, 0))
+                stat_bredde = stat_tekst.get_width()
+                screen.blit(stat_tekst, (screen_size[0] - stat_bredde - 10, y_offset))
+                # opdater y_offset så næste tekst tegnes under den forrige
+                y_offset += 40
+    def tegn_info(self, screen, total_terræn_bevægelse_pris, hvor_man_kom_fra=None, start=None, målet=None):
+
+       self.terræn_tæller, self.terræn_typer_i_stien = self.definere_terræn_tælling(hvor_man_kom_fra, start, målet)
+
+       self.tegn_terræn_antal(screen,self.terræn_tæller)
+       self.tegn_pris(screen, total_terræn_bevægelse_pris)
+       self.tegn_sum_af_terræn(screen, self.terræn_typer_i_stien)    
+
+
         
     
 def main():
@@ -240,7 +333,9 @@ def main():
     vejviser = A_star(kort)
     # tegn kort én gang
     kort.definere_kortet(seed)
-    
+    hvor_man_kom_fra = None
+    start = None
+    slut = None
     
     while True:
         kort.tegn_kortet(screen)
@@ -254,14 +349,16 @@ def main():
             total_terræn_bevægelse_pris = terræn_bevægelse_pris_so_far[slut]
 
             vejviser.tegn_algoritme_sti(screen, hvor_man_kom_fra, start, slut)
-        vejviser.tegn_total_pris (screen,total_terræn_bevægelse_pris)
+        vejviser.tegn_info(screen, total_terræn_bevægelse_pris, hvor_man_kom_fra, start, slut)
         Cirkeler.tegn_cirkel(screen,)
         pygame.display.flip()
         for event in pygame.event.get():
             
             
-            seed, Cirkeler.liste_af_højre__klik, Cirkeler.liste_af_venstre__klik, total_terræn_bevægelse_pris =(
-            randomisere_seed(event, seed, kort, Cirkeler, total_terræn_bevægelse_pris))
+            seed, hvor_man_kom_fra, start, slut, Cirkeler.liste_af_højre__klik, Cirkeler.liste_af_venstre__klik, total_terræn_bevægelse_pris = (
+    nutstil_kortet(event, seed, kort, Cirkeler,hvor_man_kom_fra, start, slut, total_terræn_bevægelse_pris))
+            
+                
             
             Cirkeler.registre_klik(event)
             if event.type == pygame.QUIT:
@@ -273,5 +370,3 @@ def main():
     
 if __name__ == '__main__':
     main()
-
-

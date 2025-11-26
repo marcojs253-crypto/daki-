@@ -58,7 +58,7 @@ def registre_klik(event, højre, venstre):
     return højre, venstre
 
 
-def randomisere_seed(event, seed):
+def nutstil_kortet(event, seed):
     if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
         seed = random.randint(1, 100)
         definere_kortet(seed)
@@ -169,7 +169,7 @@ def main():
             højre, venstre = registre_klik(event, højre, venstre)
 
             # Space → nyt kort
-            seed, reset = randomisere_seed(event, seed)
+            seed, reset = nutstil_kortet(event, seed)
             if reset:
                 venstre = []
                 højre = []

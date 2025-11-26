@@ -1,0 +1,96 @@
+import unittest
+from A_star__eksamens_projekt import Kort, A_star
+
+
+# ========== FØRSTE TEST-KLASSE: TESTER KORT-KLASSEN ==========
+class TestKort(unittest.TestCase):
+    """
+    Denne klasse indeholder tests for Kort-klassen.
+    Alle metoder der starter med 'test_' bliver kørt automatisk.
+    """
+
+    def setUp(self):
+        """
+        setUp() køres FØR hver test automatisk.
+        
+        Formål: Forberede de objekter som testen skal bruge.
+        Hvis der er flere tests i denne klasse, køres setUp() før hver enkelt.
+        """
+        # Lav en screen-variabel og sæt den til None
+        # (Vi skal ikke tegne noget under test, så None er fin)
+        self.screen = None
+        
+        # Lav et Kort-objekt som skal testes
+        # Vi giver det self.screen (som er None) som parameter
+        self.kort = Kort(self.screen)
+
+
+    def test_definere_kortet(self):
+        """
+        TEST 1: Tjekker at kortet bliver genereret med data.
+        
+        Hvad der testes:
+        - Kalder definere_kortet() med seed=5
+        - Tjekker at felt_data liste får data (ikke er tom)
+        """
+        
+        # STEP 1: Kald definere_kortet() med seed 5
+        # seed = frø til Perlin noise - samme seed giver samme kort hver gang
+        self.kort.definere_kortet(5)
+        
+        # STEP 2: Tjek at felt_data har data
+        # len() tæller hvor mange rækker listen har
+        # > 0 betyder "større end 0" (altså ikke tom)
+        # self.assertTrue() tjekker at udsagnet er True
+        # 
+        # Eksempel:
+        # Hvis felt_data har 80 rækker: len=80, 80>0=True → TEST PASS ✓
+        # Hvis felt_data er tom: len=0, 0>0=False → TEST FAIL ✗
+        self.assertTrue(len(self.kort.felt_data) > 0)
+
+
+# ========== ANDEN TEST-KLASSE: TESTER A_STAR-KLASSEN ==========
+class TestAStar(unittest.TestCase):
+    """
+    Denne klasse indeholder tests for A_star-klassen.
+    A_star bruges til at finde vej på kortet.
+    """
+
+    def setUp(self):
+       
+        
+        # Her forberederes både Kort og A_star objekter
+        # fordi A_star har brug for et Kort for at virke.
+  
+        
+        # STEP 1: Lav et Kort-objekt
+        # None betyder vi ikke skal tegne på skærmen
+        self.kort = Kort(None)
+        
+        # STEP 2: Generer kortet med seed 5
+        # seed=5 betyder samme kort hver gang (reproducerbar)
+        self.kort.definere_kortet(5)
+        
+        # STEP 3: Lav et A_star-objekt
+        # A_star-klassen bruger kortet til at tjekke terræn-priserne
+        # Derfor giver vi kortet som parameter: A_star(self.kort)
+        self.astar = A_star(self.kort)
+
+
+    def test_heuristik(self):
+     
+        
+        # STEP 1: Kald heuristik-funktionen
+        # Hvor langt er der fra (0,0) til (1,1)?
+        # Funktionen returnerer 2 (Manhattan distance)
+        resultat = self.astar.heuristik((0, 0), (1, 1))
+        
+        # STEP 2: Tjek at resultatet er 2
+        # self.assertEqual(a, b) tjekker at a er lig med b
+        self.assertEqual(resultat, 2)
+
+
+# ========== MAIN: START TEST-RUNNEREN ==========
+if __name__ == "__main__":
+  
+    unittest.main()
