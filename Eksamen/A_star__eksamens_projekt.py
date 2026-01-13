@@ -16,14 +16,14 @@ class Kort :
         self.felt_data = []   # 2D liste med alle felter
 
      
-    def definere_kortet(self, seed):
+    def definere_kortet(self, seed): 
         # Initialiserer OpenSimplex-generatoren med det ønskede seed
         gen = OpenSimplex(seed)
         for y in range(screen_size[1] // felt_størrelse):
             række_for_x_værdierne = []
             for x in range(screen_size[0] // felt_størrelse):
                  # noise2() giver et tal mellem -1 og 1
-                v = gen.noise2(x * 0.075, y * 0.075) #højere værdi(OCTAV) mere ugroperet---Expressions
+                v = gen.noise2(x * 0.075, y * 0.075) #højere værdi(OCTAV) mere ugroperet---Expression
                 if v < -0.6:
                     felt_dictionary = {
                         'type': 'hav',
@@ -98,7 +98,7 @@ class cirkeler_på_kortet(Kort):#supclass
             
         
 
-    def tegn_cirkel(self, screen):
+    def tegn_firkant(self, screen):
          # Tjek om der er et højreklik gemt og at listen ikke er tom
         if self.liste_af_højre__klik and len(self.liste_af_højre__klik) > 0:
             # Konverter pixel-koordinater til grid-koordinater
@@ -116,7 +116,7 @@ class cirkeler_på_kortet(Kort):#supclass
 
 
 
-def nutstil_kortet(event, seed, kort, cirkler, hvor_man_kom_fra, start, slut, total_terræn_bevægelse_pris):
+def nutstil_kortet(event, seed, kort, cirkler, hvor_man_kom_fra, start, slut, total_terræn_bevægelse_pris):# statisk metode
       #funktion til at randomisere seed og nulstille variabler via mellemrumstasten,
     # så kortet kan tegnes på ny, og spilleren kan vælge nye start og slut
     if event.type == pygame.KEYDOWN:
@@ -148,7 +148,7 @@ class A_star:
     def heuristik(self, a, b):   
         dx = abs(a[0] - b[0])
         dy = abs(a[1] - b[1])
-        return max(dx, dy) + (1.414 - 1) * min(dx, dy)#--------- fejl -----Octile distances
+        return max(dx, dy) + (1.41 - 1) * min(dx, dy)#--------- fejl -----Octile distances
         
 
     def find_naboer(self,nuvarande_position):
@@ -189,7 +189,7 @@ class A_star:
         
         if self.er_dirgonal(retning): # Tjekker om er_dirgonal returener True
              # Hvis ja, gang pris med kvadratroden af 2 (ca. 1.414) 
-           pris *= 1.414 
+           pris *= 1.41 
         return pris
         
 
@@ -209,17 +209,17 @@ class A_star:
         bevægelse_pris_hidtil_dict[start] = 0
 
         # Så længe der er positioner at undersøge, skal vi fortsætte
-        while not uudforskede_positioner.empty():
+        while True:
             # Hent den position med LAVESTE estimerede total pris
             # PriorityQueue giver os automatisk den billigste først
-            estimeret_total_pris, nuværende_position  = uudforskede_positioner.get()
+            estimeret_total_pris, nuværende_position  = uudforskede_positioner.get()#går tilbage og finder den laves
             if nuværende_position  == målet:
                 break
             # Find alle naboer og retninger til den nuværende position
             naboer_liste, retninger_liste = self.find_naboer(nuværende_position )
 
             # Gå gennem hver nabo og dens retning, zip bruges til at parre dem sammen
-            for næste_nabo,retning in zip(naboer_liste,retninger_liste): 
+            for næste_nabo,retning in zip(naboer_liste,retninger_liste): # bruger dem begge i samme for iteration, i stedet for at skrive I 2 gange
                 # her finder man den nye pris ved at tage prisen for den nuværnde position
                 # og lægge prisen for at gå til den næste nabo
                 ny_terræn_bevægelse_pris = bevægelse_pris_hidtil_dict[nuværende_position ] + self.terræn_bevægelse_pris(næste_nabo, retning)
@@ -292,13 +292,14 @@ class A_star:
         stat_tekst = font.render(f"Terræn-typer: {antal_typer}", True, (0, 0, 0))
         stat_bredde = stat_tekst.get_width()
         screen.blit(stat_tekst, (screen_size[0] - stat_bredde - 10, 60))
+
     def tegn_terræn_antal(self, screen,terræn_tæller):
         font = pygame.font.Font(None, 42) 
         #hvor langt nede teksten skal tegnes
         y_offset = 100
         #.items() er en metode der konverterer en dictionary til en liste af (key, value) par.
         # så her går loopet gennem hvert key (terræn) og value(antal) i listen
-        for terræn, antal in terræn_tæller.items():
+        for terræn, antal in terræn_tæller.items(): # items retuner en liste af tupler
             # hvis der mere 0 af en terræn type, så tegnes den
             if antal > 0:
                 stat_tekst = font.render(f"{terræn}: {antal}", True, (0, 0, 0))
@@ -306,6 +307,7 @@ class A_star:
                 screen.blit(stat_tekst, (screen_size[0] - stat_bredde - 10, y_offset))
                 # opdater y_offset så næste tekst tegnes under den forrige
                 y_offset += 40
+
     def tegn_info(self, screen, total_terræn_bevægelse_pris, hvor_man_kom_fra=None, start=None, målet=None):
 
        self.terræn_tæller, self.terræn_typer_i_stien = self.definere_terræn_tælling(hvor_man_kom_fra, start, målet)
@@ -319,27 +321,27 @@ class A_star:
     
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((screen_size[0], screen_size[1]))
     pygame.display.set_caption("kort_spillet")
+    screen = pygame.display.set_mode((screen_size[0], screen_size[1]))
     seed = 0
     total_terræn_bevægelse_pris= 0
-
-    # Initialiser kort, cirkeler og A* algoritme
-    kort = Kort(screen)
-    Cirkeler = cirkeler_på_kortet(screen)
-    vejviser = A_star(kort)
-    # tegn kort én gang
-    kort.definere_kortet(seed)
     hvor_man_kom_fra = None
     start = None
     slut = None
+    # Initialiser kort, firkant og A* algoritme
+    kort = Kort(screen)
+    firkant = cirkeler_på_kortet(screen)
+    vejviser = A_star(kort)
+    # tegn kort én gang
+    kort.definere_kortet(seed)
+
     
     while True:
         kort.tegn_kortet(screen)
         # Tjek om brugeren har klikket BÅDE højre OG venstre (= valgt start OG slut)
-        if len(Cirkeler.liste_af_højre__klik)>0 and len(Cirkeler.liste_af_venstre__klik) > 0:
-            start_postion=Cirkeler.liste_af_venstre__klik[-1]
-            slut_postion=Cirkeler.liste_af_højre__klik[-1]
+        if len(firkant.liste_af_højre__klik)>0 and len(firkant.liste_af_venstre__klik) > 0:
+            start_postion=firkant.liste_af_venstre__klik[-1]
+            slut_postion=firkant.liste_af_højre__klik[-1]
             start = (start_postion[0]//felt_størrelse, start_postion[1]//felt_størrelse)
             slut = (slut_postion[0]//felt_størrelse, slut_postion[1]//felt_størrelse)
             hvor_man_kom_fra, terræn_bevægelse_pris_so_far = vejviser.Algoritmen_rute_beringer(start, slut)
@@ -347,14 +349,16 @@ def main():
             vejviser.tegn_algoritme_sti(screen, hvor_man_kom_fra, start, slut)
 
         vejviser.tegn_info(screen, total_terræn_bevægelse_pris, hvor_man_kom_fra, start, slut)
-        Cirkeler.tegn_cirkel(screen,)
+        firkant.tegn_firkant(screen,)
         pygame.display.flip()
+        
         for event in pygame.event.get():            
-            seed, hvor_man_kom_fra, start, slut, Cirkeler.liste_af_højre__klik, Cirkeler.liste_af_venstre__klik, total_terræn_bevægelse_pris = (
-             nutstil_kortet(event, seed, kort, Cirkeler,hvor_man_kom_fra, start, slut, total_terræn_bevægelse_pris))
+            seed, hvor_man_kom_fra, start, slut, firkant.liste_af_højre__klik, firkant.liste_af_venstre__klik, total_terræn_bevægelse_pris = (
+             nutstil_kortet(event, seed, kort, firkant,hvor_man_kom_fra, start, slut, total_terræn_bevægelse_pris))
                 
             
-            Cirkeler.registre_klik(event)
+            firkant.registre_klik(event)
+
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()  
