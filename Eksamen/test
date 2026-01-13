@@ -1,21 +1,18 @@
 import unittest
-from A_star__eksamens_projekt import Kort, A_star
-
+try:
+    from A_star__eksamens_projekt import Kort, A_star
+    print(" Klasserne blev importeret succesfuldt!")
+except ImportError as fejl:
+    print("x FEJL: Kunne ikke importere  filen A_star__eksamens_projekt.py eller klasserne Kort og A_star!")
+    # Detaljeret fejlbeskeder
+    exit(1)
 
 # ========== FØRSTE TEST-KLASSE: TESTER KORT-KLASSEN ==========
 class TestKort(unittest.TestCase):
-    """
-    Denne klasse indeholder tests for Kort-klassen.
-    Alle metoder der starter med 'test_' bliver kørt automatisk.
-    """
+
 
     def setUp(self):
-        """
-        setUp() køres FØR hver test automatisk.
-        
-        Formål: Forberede de objekter som testen skal bruge.
-        Hvis der er flere tests i denne klasse, køres setUp() før hver enkelt.
-        """
+    
         # Lav en screen-variabel og sæt den til None
         # (Vi skal ikke tegne noget under test, så None er fin)
         self.screen = None
@@ -26,13 +23,7 @@ class TestKort(unittest.TestCase):
 
 
     def test_definere_kortet(self):
-        """
-        TEST 1: Tjekker at kortet bliver genereret med data.
-        
-        Hvad der testes:
-        - Kalder definere_kortet() med seed=5
-        - Tjekker at felt_data liste får data (ikke er tom)
-        """
+
         
         # STEP 1: Kald definere_kortet() med seed 5
         # seed = frø til Perlin noise - samme seed giver samme kort hver gang
@@ -47,14 +38,12 @@ class TestKort(unittest.TestCase):
         # Hvis felt_data har 80 rækker: len=80, 80>0=True → TEST PASS ✓
         # Hvis felt_data er tom: len=0, 0>0=False → TEST FAIL ✗
         self.assertTrue(len(self.kort.felt_data) > 0)
+        
 
 
 # ========== ANDEN TEST-KLASSE: TESTER A_STAR-KLASSEN ==========
 class TestAStar(unittest.TestCase):
-    """
-    Denne klasse indeholder tests for A_star-klassen.
-    A_star bruges til at finde vej på kortet.
-    """
+  
 
     def setUp(self):
        
@@ -82,12 +71,11 @@ class TestAStar(unittest.TestCase):
         
         # STEP 1: Kald heuristik-funktionen
         # Hvor langt er der fra (0,0) til (1,1)?
-        # Funktionen returnerer 2 (Manhattan distance)
-        resultat = self.astar.heuristik((0, 0), (1, 1))
+        resultat = self.astar.heuristik((0, 0), (2, 1))
         
         # STEP 2: Tjek at resultatet er 2
         # self.assertEqual(a, b) tjekker at a er lig med b
-        self.assertEqual(resultat, 2)
+        self.assertEqual(resultat, 2.41)
 
 
 # ========== MAIN: START TEST-RUNNEREN ==========
