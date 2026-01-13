@@ -1,13 +1,12 @@
 import random
 import pygame
 from opensimplex import OpenSimplex
-
 from queue import PriorityQueue
 
 
 #globalt scope så man hurtigt og nemt kan ændre skærm størrelse og felt størrelse
-screen_size = [1000, 800]
-felt_størrelse = 10
+screen_size = [1400, 800]
+felt_størrelse = 20
 
 
 class Kort :
@@ -24,7 +23,7 @@ class Kort :
             række_for_x_værdierne = []
             for x in range(screen_size[0] // felt_størrelse):
                  # noise2() giver et tal mellem -1 og 1
-                v = gen.noise2(x * 0.08, y * 0.08) #højere værdi mere ugroperet
+                v = gen.noise2(x * 0.075, y * 0.075) #højere værdi(OCTAV) mere ugroperet---Expressions
                 if v < -0.6:
                     felt_dictionary = {
                         'type': 'hav',
@@ -46,13 +45,13 @@ class Kort :
                         'farve': (51, 255, 51),
                         'felt_koordinat': (x, y)
                     }
-                elif v <= 0.5:
+                elif v <= 0.72:
                     felt_dictionary = {
                         'type': 'bjerg',
                         'bevægels_pris': 15,
-                        'farve': (50, 50, 40),
+                        'farve': (70, 70, 60),
                         'felt_koordinat': (x, y)}
-                elif v <= 0.75:
+                elif v <= 0.76:
                     felt_dictionary = {
                         'type': 'bjerg',
                         'bevægels_pris': 15,
@@ -146,12 +145,10 @@ class A_star:
             'bjerg': 0,
             'lava': 0}
         self.terræn_typer_i_stien = set()
-    def heuristik(self,a, b):   
-         # Pak koordinaterne ud  
-        (x1, y1) = a
-        (x2, y2) = b
-        #abs = absolut værdi = nomerisk værrdi
-        return abs(x1 - x2) + abs(y1 - y2)
+    def heuristik(self, a, b):   
+        dx = abs(a[0] - b[0])
+        dy = abs(a[1] - b[1])
+        return max(dx, dy) + (1.414 - 1) * min(dx, dy)#--------- fejl -----Octile distances
         
 
     def find_naboer(self,nuvarande_position):
@@ -265,7 +262,7 @@ class A_star:
         # screen_size[0] = 1000 (højre kant), minus bredde, minus 10 pixels margin
         screen.blit(tekst, (screen_size[0] - pris_bredde - 10, 10))
             
-    def definere_terræn_tælling(self, hvor_man_kom_fra=None, start=None, målet=None):
+    def definere_terræn_tælling(self, hvor_man_kom_fra=None, start=None, målet=None): #default parameters 
         self.terræn_tæller = {
                 'hav': 0,
                 'græs': 0,
@@ -347,26 +344,20 @@ def main():
             slut = (slut_postion[0]//felt_størrelse, slut_postion[1]//felt_størrelse)
             hvor_man_kom_fra, terræn_bevægelse_pris_so_far = vejviser.Algoritmen_rute_beringer(start, slut)
             total_terræn_bevægelse_pris = terræn_bevægelse_pris_so_far[slut]
-
             vejviser.tegn_algoritme_sti(screen, hvor_man_kom_fra, start, slut)
+
         vejviser.tegn_info(screen, total_terræn_bevægelse_pris, hvor_man_kom_fra, start, slut)
         Cirkeler.tegn_cirkel(screen,)
         pygame.display.flip()
-        for event in pygame.event.get():
-            
-            
+        for event in pygame.event.get():            
             seed, hvor_man_kom_fra, start, slut, Cirkeler.liste_af_højre__klik, Cirkeler.liste_af_venstre__klik, total_terræn_bevægelse_pris = (
-    nutstil_kortet(event, seed, kort, Cirkeler,hvor_man_kom_fra, start, slut, total_terræn_bevægelse_pris))
-            
+             nutstil_kortet(event, seed, kort, Cirkeler,hvor_man_kom_fra, start, slut, total_terræn_bevægelse_pris))
                 
             
             Cirkeler.registre_klik(event)
             if event.type == pygame.QUIT:
                 pygame.quit()
-                exit()
-                
-        
-        
-    
+                exit()  
+
 if __name__ == '__main__':
     main()
